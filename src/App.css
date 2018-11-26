@@ -1,18 +1,33 @@
 * {
-  font-family: Roboto, Arial, sans-serif;
+  font-family: "Inter UI", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
 div {
-  background-image: url("./img/pattern_17.png");
+  background-color: white;
 }
 
 a {
-  color: #ef690c;
+  color: #3463d9;
   text-decoration: underline;
 }
 
+.event-table {
+  text-align: left;
+  display: inline-block;
+  text-align: left;
+
+}
+
+.signup-table {
+  display: inline-block;
+}
+
+td {
+  padding-right: 10px;
+}
+
 th {
-  color: #ef690c;
+  color: #3463d9;
 }
 
 form {
@@ -28,7 +43,7 @@ h1 {
 
 h1, h2 {
   padding: 1rem;
-  font-family: Roboto, Arial, sans-serif;
+  font-family: "Inter UI", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   font-weight: 200;
   text-align: center;
 }
@@ -36,18 +51,18 @@ h1, h2 {
 h3 {
   font-weight: 600;
   font-size: 2rem;
-  color: #ef690c;
+  color: #3463d9;
 }
 
 h4, h5, h6 {
   padding: 0.5rem;
-  font-family: Roboto, Arial, sans-serif;
+  font-family: "Inter UI", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   font-weight: 200;
   text-align: center;
 }
 
 hr {
-  background-color: #ef690c;
+  background-color: #3463d9;
 }
 
 input {
@@ -70,7 +85,7 @@ ol {
 }
 
 thead {
-    background-color: #383838;
+    background-color: white;
 }
 
 .App {
@@ -112,7 +127,7 @@ thead {
 }
 
 .Entry {
-  background-color: rgba(255, 255, 255, 0.80);
+  background-color: white;
 }
 
 .Search {
@@ -135,19 +150,25 @@ thead {
 }
 
 .donationColumn {
-  background: #383838;
-  background-color: #383838;
-  color: white;
+  background: white;
+  background-color: white;
+  color: #000;
   justify-content: center;
   text-align: center;
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
   padding-left: 1rem;
   padding-right: 1rem;
-  padding-bottom: 0.5rem;
+  /* padding-bottom: 0.5rem; */
 }
 
 .introContainer {
   padding-bottom: 5rem;
+}
+ 
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .leaderboard {
@@ -169,15 +190,15 @@ thead {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   font-weight: 500;
-  color: #ef690c;
+  color: #3463d9;
   text-overflow: clip;
-  background: #383838;
+  background: white;
 }
 
 .donation {
-  background: #383838;
+  background: white;
 }
 
 .donation-button {
-  background: #ef690c;
+  background: #3463d9;
 }

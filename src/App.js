@@ -3,27 +3,21 @@ import "./App.css";
 
 import { css } from "glamor";
 
+import qrcode from "qrcode-generator";
+
 import Web3 from "web3";
 
 import Emojify from "react-emojione";
+import { arch } from "os";
 
 const donationNetworkID = 1; // make sure donations only go through on this network.
 
-const donationAddress = "0xc31fcE79a354E027F49501C609cF3BD3B12cEAE7"; //replace with the address to watch
+const donationAddress = "0xf7050c2908b6c1ccdfb2a44b87853bcc3345e3b3"; //replace with the address to watch
 const apiKey = "SC1H6JHAK19WC1D3BGV3JWIFD983E7BS58"; //replace with your own key
 
-const etherscanApiLinks = {
-  extTx:
-    "https://api.etherscan.io/api?module=account&action=txlistinternal&address=" +
-    donationAddress +
-    "&startblock=0&endblock=99999999&sort=asc&apikey=" +
-    apiKey,
-  intTx:
-    "https://api.etherscan.io/api?module=account&action=txlist&address=" +
-    donationAddress +
-    "&startblock=0&endblock=99999999&sort=asc&apikey=" +
-    apiKey
-};
+var typeNumber = 4;
+var errorCorrectionLevel = 'L';
+var qr = qrcode(typeNumber, errorCorrectionLevel);
 
 const isSearched = searchTerm => item =>
   item.from.toLowerCase().includes(searchTerm.toLowerCase());
@@ -112,20 +106,6 @@ class App extends Component {
     }.bind(this);
   };
 
-  getAccountData = () => {
-    let fetchCalls = [
-      fetch(`${etherscanApiLinks.extTx}`),
-      fetch(`${etherscanApiLinks.intTx}`)
-    ];
-    return Promise.all(fetchCalls)
-      .then(res => {
-        return Promise.all(res.map(apiCall => apiCall.json()));
-      })
-      .then(responseJson => {
-        return [].concat.apply(...responseJson.map(res => res.result));
-      });
-  };
-
   handleDonate = event => {
     event.preventDefault();
     const form = event.target;
@@ -178,61 +158,7 @@ class App extends Component {
     });
   };
 
-  processEthList = ethlist => {
-    // let totalAmount = new myweb3.utils.BN(0);
-    let filteredEthList = ethlist
-      .map(obj => {
-        obj.value = new myweb3.utils.BN(obj.value); // convert string to BigNumber
-        return obj;
-      })
-      .filter(obj => {
-        return obj.value.cmp(new myweb3.utils.BN(0));
-      }) // filter out zero-value transactions
-      .reduce((acc, cur) => {
-        // group by address and sum tx value
-        if (cur.isError !== "0") {
-          // tx was not successful - skip it.
-          return acc;
-        }
-        if (cur.from === donationAddress) {
-          // tx was outgoing - don't add it in
-          return acc;
-        }
-        if (typeof acc[cur.from] === "undefined") {
-          acc[cur.from] = {
-            from: cur.from,
-            value: new myweb3.utils.BN(0),
-            input: cur.input,
-            hash: []
-          };
-        }
-        acc[cur.from].value = cur.value.add(acc[cur.from].value);
-        acc[cur.from].input =
-          cur.input !== "0x" && cur.input !== "0x00"
-            ? cur.input
-            : acc[cur.from].input;
-        acc[cur.from].hash.push(cur.hash);
-        return acc;
-      }, {});
-    filteredEthList = Object.keys(filteredEthList)
-      .map(val => filteredEthList[val])
-      .sort((a, b) => {
-        // sort greatest to least
-        return b.value.cmp(a.value);
-      })
-      .map((obj, index) => {
-        // add rank
-        obj.rank = index + 1;
-        return obj;
-      });
-    const ethTotal = filteredEthList.reduce((acc, cur) => {
-      return acc.add(cur.value);
-    }, new myweb3.utils.BN(0));
-    return this.setState({
-      ethlist: filteredEthList,
-      totalAmount: parseFloat(myweb3.utils.fromWei(ethTotal)).toFixed(2)
-    });
-  };
+
 
   componentDidMount = () => {
     if (
@@ -252,17 +178,8 @@ class App extends Component {
       myweb3 = new Web3();
     }
 
-    this.getAccountData().then(res => {
-      this.setState(
-        {
-          transactionsArray: res
-        },
-        () => {
-          this.processEthList(res);
-          this.subscribe(donationAddress);
-        }
-      );
-    });
+    qr.addData(donationAddress);
+    qr.make();
   };
 
   render = () => {
@@ -281,78 +198,14 @@ class App extends Component {
     });
 
     return (
-      <div className="App container-fluid">
-        <div
-          {...responsiveness}
-          className="flex-row d-flex justify-content-around"
-        >
-          <div className="flex-column introColumn">
-            <img
-              src="/img/supports.pngc"
-              className="typelogo img-fluid"
-              alt="Banner Placeholder"
-            />
-            <div className="introContainer">
-              <h1>Ellicott City Flood Donation Leaderboard</h1>
-              <h4>
-                The Bitcoin Podcast Network wants to help the victims of the recent Ellicott City flood, and needs your help to do it.
-              </h4>
-              <h4>
-                {`For those that are unaware, on Sunday, May 27, 2018, Historic Ellicott City experienced another devastating flood that destroyed many local businesses and patron's property.  A quick `}
-                <a href="https://www.youtube.com/results?search_query=ellicott+city+flood"> youtube search</a>
-                {` will reveal the carnage that started within minutes.`} 
-              </h4>
-              <h4>
-                We're asking you to give what you can, and put yourself on the leaderboard of contributors.  Help Ellicott City get back on its feet.
-              </h4>
-              <h4>
-                {`All funds will go to the `}
-                <a href="https://cfhoco.org/">Community Foundation of Howard County</a>
-                {` relief fund.  If you feel more comfortable donating directly through their website, then please do.  This leaderboard is an attempt to let the crypto community contribute directly.`}
-              </h4>
-              <hr/>
-              <h6>
-                Funds disbursement will be handled by Corey Petty on behalf of The Bitcion Podcast Network. He previously lived within walking distance of the flood path, and personally knows many who have suffered from this disaster.
-              </h6>
-              <h6>
-                {`Forked with <3 from the Unicorns at `}
-                <a href="https://giveth.io">Giveth</a>
-              </h6>
-              <h6>
-                NOTE: ERC20 tokens will be accepted but will not show up on the leaderboard.
-              </h6>
-            </div>
 
-            <div {...responsiveness} className="flex-row d-flex amount">
-              <div className="flex-column margin">
-                <strong>Amount donated </strong>
-                <h3>{this.state.totalAmount} ETH</h3>
-              </div>
-              <div className="flex-column margin">
-                <form className="Search">
-                  <input
-                    type="text"
-                    onChange={this.onSearchChange}
-                    placeholder="filter leaderboard"
-                  />
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-column donationColumn">
-            <img src="/img/ways-to-donate.svg" className="typelogo img-fluid" />
+          
+          <div className="donationColumn">
             {candonate ? (
               <div className="donation">
-                <h4 {...hiddenOnMobile}>
-                  Publicly: Send a transaction via Metamask with your name (or something else)
-                  as a message{" "}
-                </h4>
-                <h4>
-                  All donations with the same address will be added together.
-                </h4>
+               
 
-                <form {...hiddenOnMobile} onSubmit={this.handleDonate}>
+                <form  onSubmit={this.handleDonate}>
                   <input
                     type="text"
                     placeholder="ETH to donate"
@@ -365,56 +218,13 @@ class App extends Component {
             ) : (
               <br />
             )}
-            <hr />
-            <h4>Privately: Send directly to the donation address</h4>
-            <img src="/img/Address-QR.png" className="qr-code" />
+            <img src={qr.createDataURL(6,2)} />
             <div className="word-wrap">
               <strong>{donationAddress}</strong>
             </div>
-          </div>
-        </div>
 
-        <div className="flex-column leaderboard">
-          <table className="table">
-            <thead className="pagination-centered">
-              <tr>
-                <th>Rank</th>
-                <th>Address</th>
-                <th>Value</th>
-                <th>Message</th>
-                <th>Tx Link</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.ethlist
-                .filter(isSearched(this.state.searchTerm))
-                .map(item => (
-                  <tr key={item.hash} className="Entry">
-                    <td>{item.rank} </td>
-                    <td>{item.from} </td>
-                    <td>{myweb3.utils.fromWei(item.value)} ETH</td>
-                    <td>
-                      <Emojify>
-                        {item.input.length &&
-                          myweb3.utils.hexToAscii(item.input)}
-                      </Emojify>
-                    </td>
-                    <td className="table-tx-header">
-                      {item.hash.map((txHash, index) => (
-                        <a
-                          key={index}
-                          href={"https://etherscan.io/tx/" + txHash}
-                        >
-                          [{index + 1}]
-                        </a>
-                      ))}
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+          </div>
+
     );
   }; // End of render()
 } // End of class App extends Component
