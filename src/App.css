@@ -102,12 +102,22 @@ thead {
   margin: 0px;
 }
 
-.btn {
+.donation-button {
   margin: 0.5rem;
-  padding: 0.5rem;
+  padding: 0.5rem 1.5rem;
   min-width: 10vw;
   height: 2.5rem;
   align-self: center;
+  box-shadow: 0px 2px 4px rgba(43, 59, 71, 0.124066);
+  border-radius: 20px;
+  background-color: #000;
+  color: #fff;
+  font-size: 16px;
+}
+
+.donation-button:hover {
+  color: #000;
+  background-color: #fff;
 }
 
 .container-fluid {
@@ -190,7 +200,7 @@ img {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   font-weight: 500;
-  color: #3463d9;
+  color: #000;
   text-overflow: clip;
   background: white;
 }
@@ -200,5 +210,5 @@ img {
 }
 
 .donation-button {
-  background: #3463d9;
+  background: #000;
 }

@@ -7,9 +7,6 @@ import qrcode from "qrcode-generator";
 
 import Web3 from "web3";
 
-import Emojify from "react-emojione";
-import { arch } from "os";
-
 const donationNetworkID = 1; // make sure donations only go through on this network.
 
 const donationAddress = "0xf7050c2908b6c1ccdfb2a44b87853bcc3345e3b3"; //replace with the address to watch
@@ -23,6 +20,7 @@ const isSearched = searchTerm => item =>
   item.from.toLowerCase().includes(searchTerm.toLowerCase());
 
 var myweb3;
+var ethereum;
 
 class App extends Component {
   constructor(props) {
@@ -106,6 +104,39 @@ class App extends Component {
     }.bind(this);
   };
 
+  handleConnect = async () => {
+    // Modern dapp browsers...
+    if (window.ethereum) {
+      window.myweb3 = new Web3(ethereum);
+      try {
+          // Request account access if needed
+          await ethereum.enable();
+          // Acccounts now exposed
+          this.setState({
+            candonate: true
+          });
+      } catch (error) {
+        this.setState({
+          candonate: false
+        });
+      }
+    }
+    // Legacy dapp browsers...
+    else if (window.myweb3) {
+        window.myweb3 = new Web3(myweb3.currentProvider);
+        // Acccounts always exposed
+        this.setState({
+          candonate: true
+        });
+    }
+    // Non-dapp browsers...
+    else {
+      this.setState({
+        candonate: false
+      });
+    }
+  }
+
   handleDonate = event => {
     event.preventDefault();
     const form = event.target;
@@ -118,22 +149,22 @@ class App extends Component {
     myweb3.eth.net.getId().then(netId => {
       switch (netId) {
         case 1:
-          console.log("Metamask is on mainnet");
+          console.log("You're on mainnet");
           break;
         case 2:
-          console.log("Metamask is on the deprecated Morden test network.");
+          alert("The Morden test network is deprecated.");
           break;
         case 3:
-          console.log("Metamask is on the ropsten test network.");
+          console.log("You're on the ropsten test network.");
           break;
         case 4:
-          console.log("Metamask is on the Rinkeby test network.");
+          console.log("You're on the Rinkeby test network.");
           break;
         case 42:
-          console.log("Metamask is on the Kovan test network.");
+          console.log("You're on the Kovan test network.");
           break;
         default:
-          console.log("Metamask is on an unknown network.");
+          console.log("You're on an unknown network.");
       }
       if (netId === donationNetworkID) {
         return myweb3.eth.getAccounts().then(accounts => {
@@ -158,26 +189,10 @@ class App extends Component {
     });
   };
 
-
-
   componentDidMount = () => {
-    if (
-      typeof window.web3 !== "undefined" &&
-      typeof window.web3.currentProvider !== "undefined"
-    ) {
-      myweb3 = new Web3(window.web3.currentProvider);
-      myweb3.eth.defaultAccount = window.web3.eth.defaultAccount;
-      this.setState({
-        candonate: true
-      });
-    } else {
-      // I cannot do transactions now.
-      this.setState({
-        candonate: false
-      });
-      myweb3 = new Web3();
-    }
-
+    this.setState({
+      candonate: true
+    });
     qr.addData(donationAddress);
     qr.make();
   };
@@ -198,25 +213,23 @@ class App extends Component {
     });
 
     return (
-
           
           <div className="donationColumn">
-            {candonate ? (
-              <div className="donation">
-               
-
-                <form  onSubmit={this.handleDonate}>
+            <button onClick={this.handleConnect} className="donation-button">Connect Wallet</button>
+              {candonate ? (
+                <div className="donation">
+                <form onSubmit={this.handleDonate}>
                   <input
                     type="text"
                     placeholder="ETH to donate"
                     name="amount"
                   />
                   <input type="text" placeholder="message" name="message" />
-                  <button className="btn btn-primary donation-button">Send</button>
+                  <button className="donation-button">Donate Now!</button>
                 </form>
               </div>
-            ) : (
-              <br />
+              ) : (
+                <br />
             )}
             <img src={qr.createDataURL(6,2)} />
             <div className="word-wrap">
