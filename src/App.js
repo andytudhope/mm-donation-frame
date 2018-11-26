@@ -125,7 +125,6 @@ class App extends Component {
   handleDonate = event => {
     event.preventDefault();
     const form = event.target;
-    console.log(window.web3)
     let donateWei = new window.web3.utils.BN(
       window.web3.utils.toWei(form.elements["amount"].value, "ether")
     );
@@ -163,7 +162,7 @@ class App extends Component {
               data: message
             })
             .catch(e => {
-              console.log(e);
+              alert(e);
             });
         });
       } else {
