@@ -1,3 +1,4 @@
+/*eslint-disable no-undef*/
 import React, { Component } from "react";
 import "./App.css";
 
@@ -10,13 +11,14 @@ import Web3 from "web3";
 const donationNetworkID = 1; // make sure donations only go through on this network.
 
 const donationAddress = "0xf7050c2908b6c1ccdfb2a44b87853bcc3345e3b3"; //replace with the address to watch
+const apiKey = "SC1H6JHAK19WC1D3BGV3JWIFD983E7BS58"; //replace with your own key
 
 var typeNumber = 4;
 var errorCorrectionLevel = 'L';
 var qr = qrcode(typeNumber, errorCorrectionLevel);
 
-var web3;
-var ethereum;
+const isSearched = searchTerm => item =>
+  item.from.toLowerCase().includes(searchTerm.toLowerCase());
 
 class App extends Component {
   constructor(props) {
@@ -100,22 +102,43 @@ class App extends Component {
     }.bind(this);
   };
 
+  handleConnect = async () => {
+    // Modern dapp browsers...
+    if (window.ethereum) {
+      window.web3 = new Web3(ethereum);
+      try {
+          // Request account access if needed
+          await ethereum.enable();
+          // Acccounts now exposed
+          this.setState({
+            candonate: true
+          });
+      } catch (error) {
+        console.log(error);
+        this.setState({
+          candonate: false
+        });
+      }
+    }
+  }
+
   handleDonate = event => {
     event.preventDefault();
     const form = event.target;
-    let donateWei = new web3.utils.BN(
-      web3.utils.toWei(form.elements["amount"].value, "ether")
+    console.log(window.web3)
+    let donateWei = new window.web3.utils.BN(
+      window.web3.utils.toWei(form.elements["amount"].value, "ether")
     );
-    let message = web3.utils.toHex(form.elements["message"].value);
+    let message = window.web3.utils.toHex(form.elements["message"].value);
     let extraGas = form.elements["message"].value.length * 68;
 
-    web3.eth.net.getId().then(netId => {
+    window.web3.eth.net.getId().then(netId => {
       switch (netId) {
         case 1:
           console.log("You're on mainnet");
           break;
         case 2:
-          console.log("You're on the deprecated Morden test network.");
+          alert("The Morden test network is deprecated.");
           break;
         case 3:
           console.log("You're on the ropsten test network.");
@@ -130,11 +153,10 @@ class App extends Component {
           console.log("You're on an unknown network.");
       }
       if (netId === donationNetworkID) {
-        return web3.eth.getAccounts().then(accounts => {
-          web3.eth.defaultAccount = accounts[0];
-          return web3.eth
+        return window.web3.eth.getAccounts().then(accounts => {
+          return window.web3.eth
             .sendTransaction({
-              from: web3.eth.defaultAccount,
+              from: accounts[0],
               to: donationAddress,
               value: donateWei,
               gas: 150000 + extraGas,
@@ -153,30 +175,19 @@ class App extends Component {
     });
   };
 
-  componentDidMount = async () => {
+  componentDidMount = () => {
     if (window.ethereum) {
-      window.web3 = new Web3(ethereum);
-      try {  
-        // Request account access if needed
-          await ethereum.enable();
-          // Acccounts now exposed
-          this.setState({
-            candonate: true
-          });
-      } catch (error) {
-          // User denied account access...
-          this.setState({
-            candonate: false
-          });
-      }
+      this.setState({
+        privatemode: true
+      });
     }
-    // Legacy dapp browsers...
+    // Legacy Provider support
     else if (window.web3) {
-        window.web3 = new Web3(web3.currentProvider);
-        // Acccounts always exposed
-        this.setState({
-          candonate: true
-        });
+      window.web3 = new Web3(window.web3.currentProvider);
+      // Acccounts always exposed
+      this.setState({
+        candonate: true
+      });
     }
     // Non-dapp browsers...
     else {
@@ -184,13 +195,13 @@ class App extends Component {
         candonate: false
       });
     }
-
     qr.addData(donationAddress);
     qr.make();
   };
 
   render = () => {
     const candonate = this.state.candonate;
+    const privatemode = this.state.privatemode;
 
     const responsiveness = css({
       "@media(max-width: 700px)": {
@@ -205,23 +216,26 @@ class App extends Component {
     });
 
     return (
-
-          
           <div className="donationColumn">
-            {candonate ? (
-              <div className="donation">
-                <form  onSubmit={this.handleDonate}>
+            {privatemode ? (
+              <button onClick={this.handleConnect} className="donation-button">Connect Wallet</button>
+            ) : (
+              <br />
+            )}
+              {candonate ? (
+                <div className="donation">
+                <form onSubmit={this.handleDonate}>
                   <input
                     type="text"
                     placeholder="ETH to donate"
                     name="amount"
                   />
                   <input type="text" placeholder="message" name="message" />
-                  <button className="btn btn-primary donation-button">Donate now!</button>
+                  <button className="donation-button">Donate Now!</button>
                 </form>
               </div>
-            ) : (
-              <br />
+              ) : (
+                <br />
             )}
             <img src={qr.createDataURL(6,2)} />
             <div className="word-wrap">
@@ -235,3 +249,4 @@ class App extends Component {
 } // End of class App extends Component
 
 export default App;
+/*eslint-enable no-undef*/
