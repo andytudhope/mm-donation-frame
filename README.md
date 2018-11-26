@@ -1,5 +1,8 @@
 # Donation Leaderboard Frame
 
+Install packages after clone with:
+```npm install```
+
 To build: 
 ```npm run build```
 
