@@ -10,16 +10,12 @@ import Web3 from "web3";
 const donationNetworkID = 1; // make sure donations only go through on this network.
 
 const donationAddress = "0xf7050c2908b6c1ccdfb2a44b87853bcc3345e3b3"; //replace with the address to watch
-const apiKey = "SC1H6JHAK19WC1D3BGV3JWIFD983E7BS58"; //replace with your own key
 
 var typeNumber = 4;
 var errorCorrectionLevel = 'L';
 var qr = qrcode(typeNumber, errorCorrectionLevel);
 
-const isSearched = searchTerm => item =>
-  item.from.toLowerCase().includes(searchTerm.toLowerCase());
-
-var myweb3;
+var web3;
 var ethereum;
 
 class App extends Component {
@@ -104,55 +100,22 @@ class App extends Component {
     }.bind(this);
   };
 
-  handleConnect = async () => {
-    // Modern dapp browsers...
-    if (window.ethereum) {
-      window.myweb3 = new Web3(ethereum);
-      try {
-          // Request account access if needed
-          await ethereum.enable();
-          // Acccounts now exposed
-          this.setState({
-            candonate: true
-          });
-      } catch (error) {
-        this.setState({
-          candonate: false
-        });
-      }
-    }
-    // Legacy dapp browsers...
-    else if (window.myweb3) {
-        window.myweb3 = new Web3(myweb3.currentProvider);
-        // Acccounts always exposed
-        this.setState({
-          candonate: true
-        });
-    }
-    // Non-dapp browsers...
-    else {
-      this.setState({
-        candonate: false
-      });
-    }
-  }
-
   handleDonate = event => {
     event.preventDefault();
     const form = event.target;
-    let donateWei = new myweb3.utils.BN(
-      myweb3.utils.toWei(form.elements["amount"].value, "ether")
+    let donateWei = new web3.utils.BN(
+      web3.utils.toWei(form.elements["amount"].value, "ether")
     );
-    let message = myweb3.utils.toHex(form.elements["message"].value);
+    let message = web3.utils.toHex(form.elements["message"].value);
     let extraGas = form.elements["message"].value.length * 68;
 
-    myweb3.eth.net.getId().then(netId => {
+    web3.eth.net.getId().then(netId => {
       switch (netId) {
         case 1:
           console.log("You're on mainnet");
           break;
         case 2:
-          alert("The Morden test network is deprecated.");
+          console.log("You're on the deprecated Morden test network.");
           break;
         case 3:
           console.log("You're on the ropsten test network.");
@@ -167,10 +130,11 @@ class App extends Component {
           console.log("You're on an unknown network.");
       }
       if (netId === donationNetworkID) {
-        return myweb3.eth.getAccounts().then(accounts => {
-          return myweb3.eth
+        return web3.eth.getAccounts().then(accounts => {
+          web3.eth.defaultAccount = accounts[0];
+          return web3.eth
             .sendTransaction({
-              from: accounts[0],
+              from: web3.eth.defaultAccount,
               to: donationAddress,
               value: donateWei,
               gas: 150000 + extraGas,
@@ -189,10 +153,38 @@ class App extends Component {
     });
   };
 
-  componentDidMount = () => {
-    this.setState({
-      candonate: true
-    });
+  componentDidMount = async () => {
+    if (window.ethereum) {
+      window.web3 = new Web3(ethereum);
+      try {  
+        // Request account access if needed
+          await ethereum.enable();
+          // Acccounts now exposed
+          this.setState({
+            candonate: true
+          });
+      } catch (error) {
+          // User denied account access...
+          this.setState({
+            candonate: false
+          });
+      }
+    }
+    // Legacy dapp browsers...
+    else if (window.web3) {
+        window.web3 = new Web3(web3.currentProvider);
+        // Acccounts always exposed
+        this.setState({
+          candonate: true
+        });
+    }
+    // Non-dapp browsers...
+    else {
+      this.setState({
+        candonate: false
+      });
+    }
+
     qr.addData(donationAddress);
     qr.make();
   };
@@ -213,23 +205,23 @@ class App extends Component {
     });
 
     return (
+
           
           <div className="donationColumn">
-            <button onClick={this.handleConnect} className="donation-button">Connect Wallet</button>
-              {candonate ? (
-                <div className="donation">
-                <form onSubmit={this.handleDonate}>
+            {candonate ? (
+              <div className="donation">
+                <form  onSubmit={this.handleDonate}>
                   <input
                     type="text"
                     placeholder="ETH to donate"
                     name="amount"
                   />
                   <input type="text" placeholder="message" name="message" />
-                  <button className="donation-button">Donate Now!</button>
+                  <button className="btn btn-primary donation-button">Donate now!</button>
                 </form>
               </div>
-              ) : (
-                <br />
+            ) : (
+              <br />
             )}
             <img src={qr.createDataURL(6,2)} />
             <div className="word-wrap">
