@@ -131,7 +131,7 @@ class App extends Component {
           // call transfer function
           return contract.methods.transfer(donationAddress, value).send({from: accounts[0]})
             .on('transactionHash', function(hash){
-              console.log(hash);
+              alert('You can see your donation on https://etherscan.io/tx/' + hash);
             });
           }).catch(e => {
             alert(e);
