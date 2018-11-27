@@ -2,8 +2,6 @@
 import React, { Component } from "react";
 import "./App.css";
 
-import { css } from "glamor";
-
 import qrcode from "qrcode-generator";
 
 import Web3 from "web3";
@@ -11,14 +9,10 @@ import Web3 from "web3";
 const donationNetworkID = 1; // make sure donations only go through on this network.
 
 const donationAddress = "0xf7050c2908b6c1ccdfb2a44b87853bcc3345e3b3"; //replace with the address to watch
-const apiKey = "SC1H6JHAK19WC1D3BGV3JWIFD983E7BS58"; //replace with your own key
 
 var typeNumber = 4;
 var errorCorrectionLevel = 'L';
 var qr = qrcode(typeNumber, errorCorrectionLevel);
-
-const isSearched = searchTerm => item =>
-  item.from.toLowerCase().includes(searchTerm.toLowerCase());
 
 class App extends Component {
   constructor(props) {
@@ -32,75 +26,6 @@ class App extends Component {
       totalAmount: 0
     };
   }
-
-  onSearchChange = event => {
-    this.setState({
-      searchTerm: event.target.value
-    });
-  };
-
-  subscribe = address => {
-    let ws = new WebSocket("wss://socket.etherscan.io/wshandler");
-
-    function pinger(ws) {
-      var timer = setInterval(function() {
-        if (ws.readyState === 1) {
-          ws.send(
-            JSON.stringify({
-              event: "ping"
-            })
-          );
-        }
-      }, 20000);
-      return {
-        stop: function() {
-          clearInterval(timer);
-        }
-      };
-    }
-
-    ws.onopen = function() {
-      this.setState({
-        socketconnected: true
-      });
-      pinger(ws);
-      ws.send(
-        JSON.stringify({
-          event: "txlist",
-          address: address
-        })
-      );
-    }.bind(this);
-    ws.onmessage = function(evt) {
-      let eventData = JSON.parse(evt.data);
-      console.log(eventData);
-      if (eventData.event === "txlist") {
-        let newTransactionsArray = this.state.transactionsArray.concat(
-          eventData.result
-        );
-        this.setState(
-          {
-            transactionsArray: newTransactionsArray
-          },
-          () => {
-            this.processEthList(newTransactionsArray);
-          }
-        );
-      }
-    }.bind(this);
-    ws.onerror = function(evt) {
-      this.setState({
-        socketerror: evt.message,
-        socketconnected: false
-      });
-    }.bind(this);
-    ws.onclose = function() {
-      this.setState({
-        socketerror: "socket closed",
-        socketconnected: false
-      });
-    }.bind(this);
-  };
 
   handleConnect = async () => {
     // Modern dapp browsers...
@@ -183,18 +108,6 @@ class App extends Component {
     const candonate = this.state.candonate;
     const privatemode = this.state.privatemode;
 
-    const responsiveness = css({
-      "@media(max-width: 700px)": {
-        "flex-wrap": "wrap"
-      }
-    });
-
-    const hiddenOnMobile = css({
-      "@media(max-width: 700px)": {
-        display: "none"
-      }
-    });
-
     return (
           <div className="donationColumn">
             {privatemode ? (
@@ -217,7 +130,7 @@ class App extends Component {
               ) : (
                 <br />
             )}
-            <img src={qr.createDataURL(6,2)} />
+            <img alt="qr-code" src={qr.createDataURL(6,2)} />
             <div className="word-wrap">
               <strong>{donationAddress}</strong>
             </div>
