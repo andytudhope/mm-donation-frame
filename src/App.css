@@ -212,3 +212,12 @@ img {
 .donation-button {
   background: #000;
 }
+
+.clear {
+  clear: both;
+}
+
+.token-select {
+  margin-top: 8px;
+  height: 46px;
+}
