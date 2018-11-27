@@ -124,7 +124,7 @@ class App extends Component {
 
   handleDonate = event => {
     event.preventDefault();
-    const form = event.target;
+    const form = document.getElementById('donate-form');
     let donateWei = new window.web3.utils.BN(
       window.web3.utils.toWei(form.elements["amount"].value, "ether")
     );
@@ -223,14 +223,14 @@ class App extends Component {
             )}
               {candonate ? (
                 <div className="donation">
-                <form onSubmit={this.handleDonate}>
+                <form id="donate-form">
                   <input
                     type="text"
                     placeholder="ETH to donate"
                     name="amount"
                   />
                   <input type="text" placeholder="message" name="message" />
-                  <button className="donation-button">Donate Now!</button>
+                  <button onClick={this.handleDonate} className="donation-button">Donate Now!</button>
                 </form>
               </div>
               ) : (
