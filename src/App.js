@@ -132,25 +132,6 @@ class App extends Component {
     let extraGas = form.elements["message"].value.length * 68;
 
     window.web3.eth.net.getId().then(netId => {
-      switch (netId) {
-        case 1:
-          console.log("You're on mainnet");
-          break;
-        case 2:
-          alert("The Morden test network is deprecated.");
-          break;
-        case 3:
-          console.log("You're on the ropsten test network.");
-          break;
-        case 4:
-          console.log("You're on the Rinkeby test network.");
-          break;
-        case 42:
-          console.log("You're on the Kovan test network.");
-          break;
-        default:
-          console.log("You're on an unknown network.");
-      }
       if (netId === donationNetworkID) {
         return window.web3.eth.getAccounts().then(accounts => {
           return window.web3.eth
