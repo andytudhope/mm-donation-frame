@@ -19,11 +19,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      ethlist: [],
-      searchTerm: "",
       donateenabled: true,
-      socketconnected: false,
-      totalAmount: 0
     };
   }
 
@@ -39,7 +35,6 @@ class App extends Component {
             candonate: true
           });
       } catch (error) {
-        console.log(error);
         this.setState({
           candonate: false
         });
@@ -72,7 +67,7 @@ class App extends Component {
             });
         });
       } else {
-        console.log("no donation allowed on this network");
+        alert("You cannot make a donation on this network");
         this.setState({
           donateenabled: false
         });
